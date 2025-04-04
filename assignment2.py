@@ -11,7 +11,9 @@ logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime
 
 def check_destination_exists(user, ip, destination):
     """Checks if the destination directory exists on the remote machine."""
-    #Kledis
+    cmd = f"ssh {user}@{ip} test -d {destination}"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=sub>
+    return result.returncode == 0
 
 def perform_backup(source, destination, user, ip, full_backup=False):
     """Performs full or incremental backup using rsync."""
