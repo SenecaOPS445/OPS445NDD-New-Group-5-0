@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import subprocess
+import os
+import logging
+from datetime import datetime
+
+# Configure logging
+logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+
+def schedule_backup(source, destination, user, ip, schedule_time):
+    """Schedules the backup using crontab."""
+   
+    cron_time = convert_to_cron_format(schedule_time)
+
+    cron_job = f'echo "{cron_time} python3 /home/ubuntu/backups {source} {destination} {user} {ip}" | crontab -'
+
+    subprocess.run(cron_job, shell=True, check=True)
+
+    logging.info(f"Scheduled backup at {schedule_time} with cron job: {cron_job}")
+
+def convert_to_cron_format(schedule_time):
+    """Converts a datetime string to cron format."""
+
+    dt = datetime.strptime(schedule_time, "%d-%m-%Y %H:%M")
+
+    return f"{dt.minute} {dt.hour} {dt.day} {dt.month} *"
