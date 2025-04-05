@@ -11,7 +11,7 @@ logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime
 def schedule_backup(source, destination, user, ip, schedule_time):
     """Schedules the backup using crontab."""
    
-    cron_time = convert_to_cron_format(schedule_time)
+    cron_time = converts_into_cron_format(schedule_time)
 
     cron_job = f'echo "{cron_time} python3 /home/ubuntu/backups {source} {destination} {user} {ip}" | crontab -'
 
@@ -19,7 +19,7 @@ def schedule_backup(source, destination, user, ip, schedule_time):
 
     logging.info(f"Scheduled backup at {schedule_time} with cron job: {cron_job}")
 
-def convert_to_cron_format(schedule_time):
+def converts_into_cron_format(schedule_time):
     """Converts a datetime string to cron format."""
 
     dt = datetime.strptime(schedule_time, "%d-%m-%Y %H:%M")
