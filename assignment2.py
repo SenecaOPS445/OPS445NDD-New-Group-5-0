@@ -50,7 +50,7 @@ def check_destination_exists(user, ip, destination):
         logging.info(f"Checked Destination: Destination directory {destination} exists on {user}@{ip}") # Added logging for success
         return True
 
-def perform_backup(source, destination, user, ip): 
+def perform_backup(source, destination, user, ip, noninteractive = False):  # default value of noninteractive is kept false
     """Performs full or incremental backup using rsync. This function checks if the destination directory exists on the remote machine and performs the appropriate backup."""
     # Commands for rsync that will be used for backup
     rsync_cmd_incremental = f"rsync -avz --delete -e 'ssh' {source} {user}@{ip}:{destination}"
@@ -59,7 +59,11 @@ def perform_backup(source, destination, user, ip):
     if check_destination_exists(user, ip, destination):
         print(" Remote destination directory exists. Incremental backup will be performed.")
         print("Files deleted locally since last backup, will also be deleted remotely if you continue.")
-        choice = input("Do you want to proceed with deleting remote-only files? (yes/no): ").strip().lower() #added input prompt for user confirmation
+
+        if noninteractive:
+            choice = "no"
+        else:
+            choice = input("Do you want to proceed with deleting remote-only files? (yes/no): ").strip().lower() #added input prompt for user confirmation
         # Validate user input
         if choice not in ["yes", "no"]:
             logging.error(f"Invalid choice: {choice}. Expected 'yes' or 'no'.")
@@ -168,6 +172,8 @@ def parse_arguments():
     parser.add_argument("user", help="SSH username for the remote machine")
     parser.add_argument("ip", help="IP address of the remote machine")
     parser.add_argument("--schedule_time", help="Backup time in format DD-MM-YYYY HH:MM",default=None)
+    parser.add_argument("--noninteractive", action="store_true",
+                        help="Run backup in non-interactive mode (skip deletion prompt; defaults to not deleting remote-only files)")
     return parser.parse_args() 
 
 if __name__ == "__main__":
