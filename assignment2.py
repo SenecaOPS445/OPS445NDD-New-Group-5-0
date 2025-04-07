@@ -7,27 +7,29 @@ import logging
 from datetime import datetime
 
 # Configure logging
-logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def check_destination_exists(user, ip, destination):
     """Checks if the destination directory exists on the remote machine."""
-    cmd = f"ssh {user}@{ip} test -d {destination}"
-    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=sub)
-    return result.returncode == 0
+    cmd = f"ssh {user}@{ip} test -d {destination}" 
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)#Capture output and error using subprocess.PIPE   
+    if result.returncode != 0:
+        logging.error(f"Destination directory {destination} does not exist on {user}@{ip}") # Added logging for error
+        return False
+    else:
+        logging.info(f"Destination directory {destination} exists on {user}@{ip}") # Added logging for success
+        return True
 
 def perform_backup(source, destination, user, ip, full_backup=False):
     """Performs full or incremental backup using rsync."""
-    #Divyansh
+#rsync -avz --delete  -e "ssh -i vm2/vm2.key" /home/ubuntu/backups/ ubuntu@10.0.0.46:/home/ubuntu/backups Rsync manual Command
+
 def schedule_backup(source, destination, user, ip, schedule_time):
     """Schedules the backup using crontab."""
-    #JD
-    def schedule_backup(source, destination, user, ip, schedule_time):
-    """Schedules the backup using crontab."""
-   
     cron_time = converts_into_cron_format(schedule_time)
 
     cron_job = f'echo "{cron_time} python3 /home/ubuntu/backups {source} {destination} {user} {ip}" | crontab -'
-
+  
     subprocess.run(cron_job, shell=True, check=True)
 
     logging.info(f"Scheduled backup at {schedule_time} with cron job: {cron_job}")
@@ -41,11 +43,7 @@ def converts_into_cron_format(schedule_time):
 
 def parse_arguments():
     """Handles command-line arguments."""
-    #Ebrahim
-    def parse_arguments():
-    """Handles command-line arguments."""
     parser = argparse.ArgumentParser(description="Backup script using rsync and SSH")
-
     parser.add_argument("source", help="Source directory to back up")
     parser.add_argument("destination", help="Destination directory on the remote machine")
     parser.add_argument("user", help="SSH username")
