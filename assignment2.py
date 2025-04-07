@@ -96,6 +96,7 @@ def schedule_backup(source, destination, user, ip, schedule_time):
             # Add the cron job
             subprocess.run(f'(crontab -l; echo "{cron_job}") | crontab -', shell=True, check=True)
             logging.info(f"Added cron job: {cron_job}")
+            print(f"Backup scheduled successfully: {cron_job}. Use 'crontab -l' to view scheduled jobs.")
     except:
         logging.error(f"Error adding cron job: {cron_job}")
         print(f"Error adding cron job: {cron_job}")
