@@ -119,6 +119,11 @@ def convert_to_cron(schedule_time):
     """Converts a datetime string to cron format."""
     try:
         dt = datetime.strptime(schedule_time, "%d-%m-%Y %H:%M")
+        if datetime.strptime(schedule_time, "%d-%m-%Y %H:%M") < datetime.now(): # check if the scheduled time is in the past
+            # if the scheduled time is in the past, log the error and exit
+            logging.error(f"Scheduled time is in the past: {schedule_time}")
+            print(f"Scheduled time is in the past: {schedule_time}")
+            exit(1) # exit with code 1 as error occurred
         return f"{dt.minute} {dt.hour} {dt.day} {dt.month} *"
     except ValueError:
         logging.error(f"Invalid schedule time format: {schedule_time}. Expected format: DD-MM-YYYY HH:MM")
@@ -139,6 +144,7 @@ def validate_ip(ip):
         logging.error(f"Invalid IP address format: {ip}")
         print(f"Invalid IP address format: {ip}")
         return False    
+  
 
 def parse_arguments():
     """Handles command-line arguments."""
@@ -160,7 +166,7 @@ if __name__ == "__main__":
     #Check if the host is reachable
     if check_host_unreachable(args.ip):
         exit(1)
-        
+
     # Check SSH authentication
     if not check_ssh_auth(args.user, args.ip):
         exit(1)
