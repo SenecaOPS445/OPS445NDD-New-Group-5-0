@@ -7,7 +7,20 @@ import logging
 import datetime
 
 # Configure logging
-logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(filename="/var/log/backup.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+def check_ssh_auth(user, ip):
+    """Checks if SSH authentication is successful."""
+    cmd = f"ssh {user}@{ip} exit"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        logging.error(f"SSH Authentication failed for {user}@{ip}: {result.stderr.decode()}")
+        print(f"SSH Authentication failed for {user}@{ip}: {result.stderr.decode()}")
+        return False
+    else:
+        logging.info(f"SSH Authentication successful for {user}@{ip}")
+        print(f"SSH Authentication successful for {user}@{ip}")
+        return True
 
 def check_destination_exists(user, ip, destination):
     """Checks if the destination directory exists on the remote machine."""
@@ -88,7 +101,6 @@ def schedule_backup(source, destination, user, ip, schedule_time):
         print(f"Error adding cron job: {cron_job}")
         exit(1)
 
-
 def convert_to_cron(schedule_time):
     """Converts a datetime string to cron format."""
     try:
@@ -119,7 +131,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Backup script using rsync and SSH")
     parser.add_argument("source", help="Source directory to back up")
     parser.add_argument("destination", help="Destination directory on the remote machine")
-    parser.add_argument("user", help="SSH username")
+    parser.add_argument("user", help="SSH username for the remote machine")
     parser.add_argument("ip", help="IP address of the remote machine")
     parser.add_argument("schedule_time", help="Backup time in format DD-MM-YYYY HH:MM")
 
