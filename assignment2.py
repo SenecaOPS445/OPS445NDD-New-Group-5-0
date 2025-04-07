@@ -133,14 +133,24 @@ def parse_arguments():
     parser.add_argument("destination", help="Destination directory on the remote machine")
     parser.add_argument("user", help="SSH username for the remote machine")
     parser.add_argument("ip", help="IP address of the remote machine")
-    parser.add_argument("schedule_time", help="Backup time in format DD-MM-YYYY HH:MM")
-
+    parser.add_argument("--schedule_time", help="Backup time in format DD-MM-YYYY HH:MM",default=None)
     return parser.parse_args()
 
-def main():
-    """Main execution flow."""
-    #Divyansh
- 
 if __name__ == "__main__":
-    main()
+    args = parse_arguments()
+
+    # Validate IP address
+    if not validate_ip(args.ip):
+        exit(1)
+    # Check SSH authentication
+    if not check_ssh_auth(args.user, args.ip):
+        exit(1)
+
+    if args.schedule_time:
+        # Schedule backup
+        schedule_backup(args.source, args.destination, args.user, args.ip, args.schedule_time)
+    else:
+        # Perform backup
+        perform_backup(args.source, args.destination, args.user, args.ip)    
+
    
