@@ -9,6 +9,19 @@ from datetime import datetime
 # Configure logging
 logging.basicConfig(filename="backup.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+def check_host_unreachable(ip):
+    """Checks if the host is unreachable."""
+    cmd = f"ping -c 1 {ip}"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        logging.error(f"Host unreachable: {ip}")
+        print(f"Host unreachable: {ip}")
+        return True
+    else:
+        logging.info(f"Host reachable: {ip}")
+        print(f"Host reachable: {ip}")
+        return False
+
 def check_ssh_auth(user, ip):
     """Checks if SSH authentication is successful."""
     cmd = f"ssh {user}@{ip} exit"
@@ -143,6 +156,11 @@ if __name__ == "__main__":
     # Validate IP address
     if not validate_ip(args.ip):
         exit(1)
+
+    #Check if the host is reachable
+    if check_host_unreachable(args.ip):
+        exit(1)
+        
     # Check SSH authentication
     if not check_ssh_auth(args.user, args.ip):
         exit(1)
