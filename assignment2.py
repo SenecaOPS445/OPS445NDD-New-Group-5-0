@@ -68,20 +68,51 @@ def perform_backup(source, destination, user, ip):
 
 def schedule_backup(source, destination, user, ip, schedule_time):
     """Schedules the backup using crontab."""
-    cron_time = converts_into_cron_format(schedule_time)
+    cron_time = convert_to_cron(schedule_time)
+    #getting absolute path of the script
+    script_path = os.path.abspath(__file__)
+    cron_job = f'{cron_time} python3 {script_path} {source} {destination} {user} {ip}'
+    try:
+        # Check if the cron job already exists
+        existing_jobs = subprocess.run("crontab -l", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if cron_job in existing_jobs.stdout.decode():
+            logging.info(f"Cron job already exists: {cron_job}")
+            print(f"Backup is already scheduled for specified source, destination and time: {cron_job}")
+            exit # exit with no code as no error occurred
+        else: 
+            # Add the cron job
+            subprocess.run(f'(crontab -l; echo "{cron_job}") | crontab -', shell=True, check=True)
+            logging.info(f"Added cron job: {cron_job}")
+    except:
+        logging.error(f"Error adding cron job: {cron_job}")
+        print(f"Error adding cron job: {cron_job}")
+        exit(1)
 
-    cron_job = f'echo "{cron_time} python3 /home/ubuntu/backups {source} {destination} {user} {ip}" | crontab -'
-  
-    subprocess.run(cron_job, shell=True, check=True)
 
-    logging.info(f"Scheduled backup at {schedule_time} with cron job: {cron_job}")
-
-def converts_into_cron_format(schedule_time):
+def convert_to_cron(schedule_time):
     """Converts a datetime string to cron format."""
-
-    dt = datetime.strptime(schedule_time, "%d-%m-%Y %H:%M")
-
-    return f"{dt.minute} {dt.hour} {dt.day} {dt.month} *"
+    try:
+        dt = datetime.strptime(schedule_time, "%d-%m-%Y %H:%M")
+        return f"{dt.minute} {dt.hour} {dt.day} {dt.month} *"
+    except ValueError:
+        logging.error(f"Invalid schedule time format: {schedule_time}. Expected format: DD-MM-YYYY HH:MM")
+        print(f"Invalid schedule time format: {schedule_time}. Expected format: DD-MM-YYYY HH:MM")
+        exit(1) # exit with code 1 as error occurred
+    
+def validate_ip(ip):
+    """Validates the IP address format."""
+    try:
+        octets = ip.split('.')
+        if len(octets) != 4:
+            raise ValueError
+        for each in octets:
+            if not (0 <= int(each) <= 255):
+                raise ValueError
+        return True
+    except ValueError:
+        logging.error(f"Invalid IP address format: {ip}")
+        print(f"Invalid IP address format: {ip}")
+        return False    
 
 def parse_arguments():
     """Handles command-line arguments."""
