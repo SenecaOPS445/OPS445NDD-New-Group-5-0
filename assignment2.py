@@ -62,8 +62,7 @@ def perform_backup(source, destination, user, ip, noninteractive = False):  # de
 
         if noninteractive:
             choice = "no"
-        else:
-            choice = input("Do you want to proceed with deleting remote-only files? (yes/no): ").strip().lower() #added input prompt for user confirmation
+        else:choice = input("Do you want to proceed with deleting remote-only files? (yes/no): ").strip().lower() #added input prompt for user confirmation
         # Validate user input
         if choice not in ["yes", "no"]:
             logging.error(f"Invalid choice: {choice}. Expected 'yes' or 'no'.")
@@ -196,4 +195,4 @@ if __name__ == "__main__":
         schedule_backup(args.source, args.destination, args.user, args.ip, args.schedule_time)
     else:
         # Perform backup
-        perform_backup(args.source, args.destination, args.user, args.ip)    
+        perform_backup(args.source, args.destination, args.user, args.ip, args.noninteractive)    
