@@ -110,7 +110,7 @@ def schedule_backup(source, destination, user, ip, schedule_time):
     cron_time = convert_to_cron(schedule_time)
     #getting absolute path of the script
     script_path = os.path.abspath(__file__)
-    cron_job = f'{cron_time} python3 {script_path} {source} {destination} {user} {ip}' #cron job to be added to crontab
+    cron_job = f'{cron_time} python3 {script_path} {source} {destination} {user} {ip} --noninteractive' #cron job to be added to crontab
     try:
         # Check if the cron job already exists
         existing_jobs = subprocess.run("crontab -l", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -196,3 +196,4 @@ if __name__ == "__main__":
     else:
         # Perform backup
         perform_backup(args.source, args.destination, args.user, args.ip, args.noninteractive)    
+#Script Finished
